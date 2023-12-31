@@ -1,4 +1,4 @@
-// server/app.js
+
 
 const express = require('express');
 const path = require('path');
@@ -30,25 +30,28 @@ app.get('/api/convert', async (req, res) => {
     const sourceCryptoPriceUSD = cryptoPriceData[sourceCrypto]?.usd;
     const sourceCryptoPriceEUR = cryptoPriceData[sourceCrypto]?.eur;
 
-    // if (!sourceCryptoPriceUSD || !sourceCryptoPriceEUR) {
-    //   return res.status(400).json({ error: 'Invalid source cryptocurrency or currency not supported' });
-    // }
+    if (!sourceCryptoPriceUSD || !sourceCryptoPriceEUR) {
+      return res.status(400).json({ error: 'Invalid source cryptocurrency' });
+    }
 
     const exchangeRateResponse = await fetch('https://api.coingecko.com/api/v3/exchange_rates');
     const exchangeRateData = await exchangeRateResponse.json();
 
-    // const targetCurrencyRateUSD = exchangeRateData.rates.usd;
-    // const targetCurrencyRateEUR = exchangeRateData.rates.eur;
+    let convertedAmount;
 
-    const convertedAmountUSD = amount * sourceCryptoPriceUSD ;
-    const convertedAmountEUR = amount * sourceCryptoPriceEUR ;
+    if (targetCurrency === 'usd') {
+      convertedAmount = amount * sourceCryptoPriceUSD ;
+    } else if (targetCurrency === 'eur') {
+      convertedAmount = amount * sourceCryptoPriceEUR ;
+    } else {
+      return res.status(400).json({ error: 'Invalid target currency' });
+    }
 
     res.json({
       sourceCrypto,
       amount,
       targetCurrency,
-      convertedAmountUSD,
-      convertedAmountEUR,
+      convertedAmount,
     });
   } catch (error) {
     console.error(error);
